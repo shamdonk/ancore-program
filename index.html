@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Ancore Program">
+  <title>Ancore Program</title>
+  <style>
+    :root {
+      --green:  #2D6A4F;
+      --navy:   #1B3A5C;
+      --amber:  #B35900;
+      --dark:   #111111;
+      --gray:   #444;
+      --light:  #FAFAF7;
+      --tan:    #F0EDE4;
+      --border: #E5E3DC;
+      --accent: #1B6CA8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: var(--light);
+      color: var(--dark);
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px;
+    }
+    .container { max-width: 540px; margin: 0 auto; padding: 20px 16px; }
+
+    /* ââ Tab Bar ââ */
+    .tab-bar {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--dark);
+      display: flex;
+      border-bottom: 3px solid var(--accent);
+    }
+    .tab-bar button {
+      flex: 1; padding: 16px 8px;
+      border: none; background: transparent;
+      color: #aaa;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 14px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s;
+      border-bottom: 3px solid transparent; margin-bottom: -3px;
+    }
+    .tab-bar button.active { color: #fff; border-bottom-color: var(--accent); }
+
+    /* ââ Headers ââ */
+    .tag {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 4px;
+    }
+    h1 { font-size: 28px; font-weight: 400; line-height: 1.2; margin-bottom: 6px; }
+    .subtitle {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 14px; color: var(--gray);
+      margin-bottom: 16px; line-height: 1.4;
+    }
+
+    /* ââ Progress ââ */
+    .progress-bar-wrap {
+      background: #e8e8e0; border-radius: 3px;
+      height: 6px; margin-bottom: 20px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; background: var(--accent);
+      border-radius: 3px; transition: width 0.4s ease;
+    }
+    .progress-text {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 14px; color: var(--gray);
+      margin-bottom: 6px;
+      display: flex; justify-content: space-between;
+    }
+
+    /* ââ Section Headers ââ */
+    .section-header {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding-bottom: 6px; margin-bottom: 10px; margin-top: 24px;
+    }
+    .section-header h2 {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase; margin: 0;
+    }
+    .section-header .sets-tag {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: #fff; padding: 3px 8px; border-radius: 3px;
+    }
+
+    /* ââ Exercise Cards ââ */
+    .exercise-card {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 6px; margin-bottom: 10px;
+      overflow: hidden; transition: all 0.2s;
+    }
+    .exercise-card.done {
+      background: #F5F7F2; border-color: #C2D4A8; opacity: 0.72;
+    }
+    .exercise-header {
+      padding: 14px 16px;
+      display: flex; align-items: flex-start; gap: 12px;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .checkbox {
+      width: 28px; height: 28px; border-radius: 4px;
+      border: 2.5px solid #aaa; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 1px; transition: all 0.2s; cursor: pointer;
+    }
+    .checkbox.checked { background: var(--green); border-color: var(--green); }
+    .checkbox svg { display: none; }
+    .checkbox.checked svg { display: block; }
+
+    .exercise-info { flex: 1; min-width: 0; }
+    .exercise-name {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 17px; font-weight: 600;
+      color: var(--dark); line-height: 1.3;
+    }
+    .done .exercise-name { text-decoration: line-through; color: #888; }
+    .exercise-target {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 13px; color: #666; margin-top: 3px;
+    }
+    .exercise-reps {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 14px; font-weight: 700;
+      white-space: nowrap; margin-left: 8px;
+      flex-shrink: 0; margin-top: 2px;
+    }
+
+    /* ââ Expanded Detail ââ */
+    .exercise-detail {
+      display: none;
+      padding: 0 16px 16px 56px;
+      border-top: 1px solid #F0EDE4;
+    }
+    .exercise-detail.show { display: block; }
+    .detail-label {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: #777; margin-top: 12px; margin-bottom: 5px;
+    }
+    .detail-text { font-size: 16px; line-height: 1.6; color: #222; }
+    .detail-why  { font-size: 15px; line-height: 1.6; color: #555; font-style: italic; }
+
+    /* ââ Video Thumbnails ââ */
+    .yt-thumb {
+      display: block;
+      position: relative;
+      margin-top: 14px;
+      border-radius: 8px;
+      overflow: hidden;
+      text-decoration: none;
+      background: #000;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .yt-thumb img {
+      width: 100%;
+      display: block;
+      border-radius: 8px;
+      transition: opacity 0.2s;
+    }
+    .yt-thumb:active img { opacity: 0.85; }
+    .yt-play {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.92;
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .yt-thumb:hover .yt-play,
+    .yt-thumb:active .yt-play {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.08);
+    }
+    .yt-label {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 12px; color: #999;
+      text-align: center; margin-top: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ââ Notes Tab ââ */
+    .notes-box {
+      background: var(--tan); border: 1px solid #D4CFC2;
+      border-radius: 6px; padding: 16px; margin-bottom: 16px;
+    }
+    .notes-box h3 {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .notes-box p {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 15px; line-height: 1.6; color: #333;
+      margin-bottom: 10px;
+    }
+    .notes-box p:last-child { margin-bottom: 0; }
+    .notes-box strong { color: var(--dark); }
+
+    /* ââ Utility ââ */
+    .reset-btn {
+      display: block; width: 100%; padding: 12px; margin-top: 16px;
+      border: 1px solid #ddd; border-radius: 6px;
+      background: #fff; color: var(--gray);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .sources {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 12px; color: #888;
+      margin-top: 20px; padding-top: 12px;
+      border-top: 1px solid var(--border); line-height: 1.5;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Tab Bar -->
+<div class="tab-bar">
+  <button class="active" onclick="showTab('workout', this)">Workout</button>
+  <button onclick="showTab('notes', this)">Notes</button>
+</div>
+
+<!-- ==================== WORKOUT TAB ==================== -->
+<div id="tab-workout" class="container">
+
+  <div class="tag">ANCORE PROGRAM</div>
+  <h1>Today's Session</h1>
+  <div class="subtitle">Warm-Up &nbsp;|&nbsp; Main Lift &nbsp;|&nbsp; Accessory &nbsp;|&nbsp; 10 exercises</div>
+
+  <div class="progress-text">
+    <span id="progress-label">0 of 10 complete</span>
+    <span id="progress-pct">0%</span>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+
+  <!-- ââââââââââââââ WARM UP ââââââââââââââ -->
+  <div class="section-header" style="border-bottom: 2px solid var(--green)">
+    <h2 style="color:var(--green)">WARM-UP</h2>
+    <span class="sets-tag" style="background:var(--green)">1 SET</span>
+  </div>
+
+  <!-- Cat Camel -->
+  <div class="exercise-card">
+    <div class="exercise-header" onclick="toggleExercise(this)">
+      <div class="checkbox" onclick="event.stopPropagation();toggleCheck(this)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="exercise-info">
+        <div class="exercise-name">Cat Camel</div>
+        <div class="exercise-target">Spinal segmentation, lumbar awareness</div>
+      </div>
+      <div class="exercise-reps" style="color:var(--green)">10 reps</div>
+    </div>
+    <div class="exercise-detail">
+      <div class="detail-label">HOW</div>
+      <div class="detail-text">Start on hands and knees, wrists under shoulders, knees under hips. Slowly arch your back up toward the ceiling while tucking your chin and pelvis (cat). Then let your belly drop toward the floor while lifting your head and tailbone (camel). Move through each vertebra deliberately â don't rush.</div>
+      <div class="detail-label">VIDEO</div>
+      <a class="yt-thumb" href="https://youtu.be/zvQ_EaBDZoM" target="_blank">
+        <img src="https://img.youtube.com/vi/zvQ_EaBDZoM/hqdefault.jpg" alt="Cat Camel video">
+        <div class="yt-play"><svg viewBox="0 0 68 48" width="60" height="42"><path d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#ff0000"/><path d="M 45,24 27,14 27,34" fill="#fff"/></svg></div>
+      </a>
+      <div class="yt-label">Tap to watch on YouTube</div>
+    </div>
+  </div>
+
+  <!-- Front Plank -->
+  <div class="exercise-card">
+    <div class="exercise-header" onclick="toggleExercise(this)">
+      <div class="checkbox" onclick="event.stopPropagation();toggleCheck(this)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="exercise-info">
+        <div class="exercise-name">Front Plank</div>
+        <div class="exercise-target">Core activation, anterior chain</div>
+      </div>
+      <div class="exercise-reps" style="color:var(--green)">10 sec hold</div>
+    </div>
+    <div class="exercise-detail">
+      <div class="detail-label">HOW</div>
+      <div class="detail-text">Forearms on the ground, elbows directly under your shoulders. Body forms a straight line from head to heels â squeeze your glutes, brace your core, and don't let your hips sag or pike. Breathe normally. Hold for 10 seconds.</div>
+      <div class="detail-label">VIDEO</div>
+      <a class="yt-thumb" href="https://youtu.be/271ExnB5KDI" target="_blank">
+        <img src="https://img.youtube.com/vi/271ExnB5KDI/hqdefault.jpg" alt="Front Plank video">
+        <div class="yt-play"><svg viewBox="0 0 68 48" width="60" height="42"><path d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#ff0000"/><path d="M 45,24 27,14 27,34" fill="#fff"/></svg></div>
+      </a>
+      <div class="yt-label">Tap to watch on YouTube</div>
+    </div>
+  </div>
+
+  <!-- Assisted Squat -->
+  <div class="exercise-card">
+    <div class="exercise-header" onclick="toggleExercise(this)">
+      <div class="checkbox" onclick="event.stopPropagation();toggleCheck(this)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="exercise-info">
+        <div class="exercise-name">Assisted Squat</div>
+        <div class="exercise-target">Hips, knees, ankles â full lower body prep</div>
+      </div>
+      <div class="exercise-reps" style="color:var(--green)">10 reps</div>
+    </div>
+    <div class="exercise-detail">
+      <div class="detail-label">HOW</div>
+      <div class="detail-text">Hold onto a fixed object (TRX strap, cable machine upright, or door frame). Feet shoulder-width, toes slightly out. Use your arms to help you descend deep into a squat, keeping chest tall. Drive through your heels to stand. Use just enough assistance to reach full depth.</div>
+      <div class="detail-label">VIDEO</div>
+      <a class="yt-thumb" href="https://youtube.com/shorts/JqDrU_z1K2Q" target="_blank">
+        <img src="https://img.youtube.com/vi/JqDrU_z1K2Q/hqdefault.jpg" alt="Assisted Squat video">
+        <div class="yt-play"><svg viewBox="0 0 68 48" width="60" height="42"><path d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#ff0000"/><path d="M 45,24 27,14 27,34" fill="#fff"/></svg></div>
+      </a>
+      <div class="yt-label">Tap to watch on YouTube</div>
+    </div>
+  </div>
+
+  <!-- Step Outs -->
+  <div class="exercise-card">
+    <div class="exercise-header" onclick="toggleExercise(this)">
+      <div class="checkbox" onclick="event.stopPropagation();toggleCheck(this)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="exercise-info">
+        <div class="exercise-name">Step Outs</div>
+        <div class="exercise-target">Hip abductors, lateral stability</div>
+      </div>
+      <div class="exercise-reps" style="color:var(--green)">20 per side</div>
+    </div>
+    <div class="exercise-detail">
+      <div class="detail-label">HOW</div>
+      <div class="detail-text">Stand tall with feet together. Step one foot out to the side and tap down, then return. Alternate sides with control. If you have a mini band, place it around your ankles for added resistance. Keep your torso upright and avoid leaning.</div>
+    </div>
+  </div>
+
+  <!-- ââââââââââââââ MAIN LIFT ââââââââââââââ -->
+  <div class="section-header" style="border-bottom: 2px solid var(--navy)">
+    <h2 style="color:var(--navy)">MAIN LIFT</h2>
+    <span class="sets-tag" style="background:var(--navy)">2â3 SETS</span>
+  </div>
+
+  <!-- Low Cable Split Squat -->
+  <div class="exercise-card">
+    <div class="exercise-header" onclick="toggleExercise(this)">
+      <div class="checkbox" onclick="event.stopPropagation();toggleCheck(this)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="exercise-info">
+        <div class="exercise-name">Low Cable Split Squat</div>
+        <div class="exercise-target">Quads, glutes, core anti-rotation</div>
+      </div>
+      <div class="exercise-reps" style="color:var(--navy)">8â12 per side</div>
+    </div>
+    <div class="exercise-detail">
+      <div class="detail-label">HOW</div>
+      <div class="detail-text">Set the cable at the lowest position. Hold the handle in the hand opposite to your front leg (contralateral). Get into a split stance â front foot flat, back foot on its toes. Lower your back knee straight down toward the floor, keeping your front shin vertical and torso upright. Drive through your front heel to stand.</div>
+      <div class="detail-label">VIDEO</div>
+      <a class="yt-thumb" href="https://youtu.be/YrvkRQeftWs" target="_blank">
+        <img src="https://img.youtube.com/vi/YrvkRQeftWs/hqdefault.jpg" alt="Low Cable Split Squat video">
+        <div class="yt-play"><svg viewBox="0 0 68 48" width="60" height="42"><path d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,0.55C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#ff0000"/><path d="M 45,24 27,14 27,34" fill="#fff"/></svg></div>
+      </a>
+      <div class="yt-label">Tap to watch on YouTube</div>
+    </div>
+  </div>
+
+  <!-- Half Kneeling Cable Row -->
+  <div class="exercise-card">
+    <div class="exercise-header" onclick="toggleExercise(this)">
+      <div class="checkbox" onclick="event.stopPropagation();toggleCheck(this)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="exercise-info">
+        <div class="exercise-name">Half Kneeling Cable Row</div>
+        <div class="exercise-target">Back, scapular retraction, hip stability</div>
+      </div>
+      <div class="exercise-reps" style="color:var(--navy)">10 per side</div>
+    </div>
+    <div class="exercise-detail">
+      <div class="detail-label">HOW</div>
+      <div class="detail-text">Kneel on one knee facing the cable stack. Set cable at chest height. Keep both hips square â don't let the pull rotate you. Pull the handle to your chest, squeezing your shoulder blade at the end. Extend back with control. Squeeze the glute of your kneeling leg throughout to maintain stability.</div>
+      <div class="detail-label">VIDEO</div>
+      <a class="yt-thumb" href="https://youtube.com/shorts/IJNHCNaY1vE" target="_blank">
+        <img src="https://img.youtube.com/vi/IJNHCNaY1vE/hqdefault.jpg" alt="Half Kneeling Cable Row video">
+        <div class="yt-play"><svg viewBox="0 0 68 48" width="60" height="42"><path d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#ff0000"/><path d="M 45,24 27,14 27,34" fill="#fff"/></svg></div>
+      </a>
+      <div class="yt-label">Tap to watch on YouTube</div>
+    </div>
+  </div>
+
+  <!-- Half Kneeling Cable Press -->
+  <div class="exercise-card">
+    <div class="exercise-header" onclick="toggleExercise(this)">
+      <div class="checkbox" onclick="event.stopPropagation();toggleCheck(this)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="exercise-info">
+        <div class="exercise-name">Half Kneeling Cable Press</div>
+        <div class="exercise-target">Chest, shoulders, anti-rotation core</div>
+      </div>
+      <div class="exercise-reps" style="color:var(--navy)">10 per side</div>
+    </div>
+    <div class="exercise-detail">
+      <div class="detail-label">HOW</div>
+      <div class="detail-text">Kneel on one knee facing away from the cable stack. Set cable at shoulder height. Hold the handle at your chest, elbow bent. Brace your core and squeeze your back glute. Press the handle forward until your arm is fully extended. Return with control. Hips and shoulders stay perfectly square throughout.</div>
+      <div class="detail-label">VIDEO</div>
+      <a class="yt-thumb" href="https://youtube.com/shorts/w7veAIBzIXM" target="_blank">
+        <img src="https://img.youtube.com/vi/w7veAIBzIQÍ#hqdefault.jpg" alt="Half Kneeling Cable Press video">
+        <div class="yt-play"><svg viewBox="0 0 68 48" width="60" height="42"><path d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#ff0000"/><path d="M 45,24 27,14 27,34" fill="#fff"/></svg></div>
+      </a>
+      <div class="yt-label">Tap to watch on YouTube</div>
+    </div>
+  </div>
+
+  <!-- SL RDL with Reach -->
+  <div class="exercise-card">
+    <div class="exercise-header" onclick="toggleExercise(this)">
+      <div class="checkbox" onclick="event.stopPropagation();toggleCheck(this)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="exercise-info">
+        <div class="exercise-name">SL RDL with Reach</div>
+        <div class="exercise-target">Hamstrings, glutes, balance, hip hinge</div>
+      </div>
+      <div class="exercise-reps" style="color:var(--navy)">12 per side</div>
+    </div>
+    <div class="exercise-detail">
+      <div class="detail-label">HOW</div>
+      <div class="detail-text">Stand on one leg with a soft bend at the knee. Hinge forward at the hip, reaching both hands toward the floor as your free leg extends directly behind you. Keep your back flat. Your body should form one long line from heel to hands. Drive through your standing heel and squeeze your glute to return to standing.</div>
+      <div class="detail-label">VIDEO</div>
+      <a class="yt-thumb" href="https://youtu.be/TenlXzqlcow" target="_blank">
+        <img src="https://img.youtube.com/vi/TenlXzqlcow/hqdefault.jpg" alt="SL RDL with Reach video">
+        <div class="yt-play"><svg viewBox="0 0 68 48" width="60" height="42"><path d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#ff0000"/><path d="M 45,24 27,14 27,34" fill="#fff"/></svg></div>
+      </a>
+      <div class="yt-label">Tap to watch on YouTube</div>
+    </div>
+  </div>
+
+  <!-- ââââââââââââââ ACCESSORY ââââââââââââââ -->
+  <div class="section-header" style="border-bottom: 2px solid var(--amber)">
+    <h2 style="color:var(--amber)">ACCESSORY</h2>
+    <span class="sets-tag" style="background:var(--amber)">2 SETS</span>
+  </div>
+
+  <!-- Cable Push Down -->
+  <div class="exercise-card">
+    <div class="exercise-header" onclick="toggleExercise(this)">
+      <div class="checkbox" onclick="event.stopPropagation();toggleCheck(this)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="exercise-info">
+        <div class="exercise-name">Cable Push Down</div>
+        <div class="exercise-target">Triceps, elbow health</div>
+      </div>
+      <div class="exercise-reps" style="color:var(--amber)">15â20 reps</div>
+    </div>
+    <div class="exercise-detail">
+      <div class="detail-label">HOW</div>
+      <div class="detail-text">Set the cable at the highest position with a rope or bar attachment. Stand facing the machine, grip shoulder-width. Keep your elbows pinned to your sides throughout. Push down until arms are fully extended, squeezing your triceps hard at the bottom. Let the weight rise with control â don't let it yank your elbows up.</div>
+      <div class="detail-label">VIDEO</div>
+      <a class="yt-thumb" href="https://youtube.com/shorts/xguGXQAvbKk" target="_blank">
+        <img src="https://img.youtube.com/vi/xguGXQAvbKk/hqdefault.jpg" alt="Cable Push Down video">
+        <div class="yt-play"><svg viewBox="0 0 68 48" width="60" height="42"><path d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#ff0000"/><path d="M 45,24 27,14 27,34" fill="#fff"/></svg></div>
+      </a>
+      <div class="yt-label">Tap to watch on YouTube</div>
+    </div>
+  </div>
+
+  <!-- Cable Curl -->
+  <div class="exercise-card">
+    <div class="exercise-header" onclick="toggleExercise(this)">
+      <div class="checkbox" onclick="event.stopPropagation();toggleCheck(this)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="exercise-info">
+        <div class="exercise-name">Cable Curl</div>
+        <div class="exercise-target">Biceps, elbow health</div>
+      </div>
+      <div class="exercise-reps" style="color:var(--amber)">15â20 reps</div>
+    </div>
+    <div class="exercise-detail">
+      <div class="detail-label">HOW</div>
+      <div class="detail-text">Set the cable at the lowest position. Stand facing the machine, feet hip-width. Grip the bar or rope with palms facing up. Keeping your elbows at your sides, curl the handles toward your shoulders. Squeeze at the top. Lower with full control â don't let the cable yank your arms down. Elbows stay fixed throughout.</div>
+      <div class="detail-label">VIDEO</div>
+      <a class="yt-thumb" href="https://youtube.com/shorts/a5dGx8szsLY" target="_blank">
+        <img src="https://img.youtube.com/vi/a5dGx8szsLY/hqdefault.jpg" alt="Cable Curl video">
+        <div class="yt-play"><svg viewBox="0 0 68 48" width="60" height="42"><path d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#ff0000"/><path d="M 45,24 27,14 27,34" fill="#fff"/></svg></div>
+      </a>
+      <div class="yt-label">Tap to watch on YouTube</div>
+    </div>
+  </div>
+
+  <button class="reset-btn" onclick="resetChecks()">Reset All Checkboxes</button>
+
+</div>
+
+<!-- ==================== NOTES TAB ==================== -->
+<div id="tab-notes" class="container hidden">
+
+  <div class="tag">ANCORE PROGRAM</div>
+  <h1>Program Notes</h1>
+  <div class="subtitle">Structure, progressions &amp; coaching cues</div>
+
+  <div class="notes-box">
+    <h3>PROGRAM STRUCTURE</h3>
+    <p><strong>Warm-Up (1 set):</strong> Non-negotiable before every session. These four movements prime your spine, core, and hips before you load them. Never skip the warm-up â it's where injury prevention lives.</p>
+    <p><strong>Main Lift (2â3 sets):</strong> The primary training block. Start at 2 sets and build to 3 as you adapt. Rest 60â90 seconds between sets. Focus on quality movement over load â especially on single-leg work.</p>
+    <p><strong>Accessory (2 sets):</strong> Finishers for arm health and muscle balance. Keep rest short (30â45 sec). These should feel like a burnout â controlled, not sloppy.</p>
+  </div>
+
+  <div class="notes-box">
+    <h3>PROGRESSIONS</h3>
+    <p><strong>Weeks 1â2:</strong> Learn the patterns. Use light loads. The cable split squat and SL RDL will feel awkward â that's normal. Nail the positions before adding weight.</p>
+    <p><strong>Weeks 3â4:</strong> Start adding load to the main lift. Half kneeling press and row should feel stable â if you're wobbling or rotating, reduce the weight.</p>
+    <p><strong>Weeks 5+:</strong> Increase load by 5% per week when you hit the top of the rep range with clean form. Add a third set to main lifts if recovery allows.</p>
+  </div>
+
+  <div class="notes-box">
+    <h3>KEY COACHING CUES</h3>
+    <p><strong>Cable Split Squat:</strong> "Knee down, not forward." Let the back knee drop straight to the floor rather than driving it forward over the back toe.</p>
+    <p><strong>Half Kneeling:</strong> "Hips square, glute on." Your kneeling side glute should be switched on the entire set. If your hip drifts, you've lost the position.</p>
+    <p><strong>SL RDL:</strong> "Push the floor away." Think about pressing your standing foot into the ground rather than pulling yourself up. Smoother reps, better muscle tension.</p>
+    <p><strong>General:</strong> Control the eccentric (lowering) phase on every rep. Slowing down the negative adds muscle, improves joint health, and reveals weaknesses in your technique.</p>
+  </div>
+
+  <div class="sources">Program structure reflects cable-based functional training principles. Always consult your trainer before modifying loads or progressions.</div>
+
+</div>
+
+<script>
+  const TOTAL = 10;
+
+  function showTab(tab, btn) {
+    document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+    document.getElementById('tab-' + tab).classList.remove('hidden');
+    document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function toggleExercise(header) {
+    header.nextElementSibling.classList.toggle('show');
+  }
+
+  function toggleCheck(cb) {
+    cb.classList.toggle('checked');
+    cb.closest('.exercise-card').classList.toggle('done');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const done = document.querySelectorAll('#tab-workout .exercise-card.done').length;
+    const pct  = Math.round((done / TOTAL) * 100);
+    document.getElementById('progress-label').textContent = done + ' of ' + TOTAL + ' complete';
+    document.getElementById('progress-pct').textContent   = pct + '%';
+    document.getElementById('progress-fill').style.width  = pct + '%';
+  }
+
+  function resetChecks() {
+    document.querySelectorAll('#tab-workout .checkbox').forEach(cb => cb.classList.remove('checked'));
+    document.querySelectorAll('#tab-workout .exercise-card').forEach(c => c.classList.remove('done'));
+    document.querySelectorAll('#tab-workout .exercise-detail').forEach(d => d.classList.remove('show'));
+    updateProgress();
+  }
+</script>
+</body>
+</html>
